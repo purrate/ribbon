@@ -1,7 +1,7 @@
 import streamlit as st
 import csv
-import os
 import pandas as pd
+import requests
 # Home Page
 def home():
     st.title("Streamlit Navigation Example")
@@ -12,6 +12,27 @@ def predict_page():
     st.title("Prediction Page")
     text = st.text_area("Enter text:")
     if st.button("Print Text"):
+        #
+        url = "http://127.0.0.1:5001/predict"  # Use the correct port number
+        data = {'input_data': text}
+        
+        try:
+            response = requests.post(url, json=data)
+
+            if response.status_code == 200:
+                result = response.json()['output']
+                print(result)
+                st.write("fuck: ", result)
+
+                st.success(f"Prediction: {result}")
+            else:
+                st.error("Error in prediction.")
+                st.write("kjcnkjenck:" )
+        except requests.exceptions.RequestException as e:
+            st.error(f"Request failed: {e}")
+
+
+        #
         st.write("Entered Text: ", text)
         cleaned_text = ",".join(text.split())  # Convert to comma-separated format
         st.text_area("Cleaned Text:", cleaned_text)
@@ -39,7 +60,7 @@ def predict_page():
 # View Data Page
 def view_data_page():
     st.title("View Data Page")
-    st.markdown("**Dummy Text in Bold**")
+    st.markdown("*Dummy Text in Bold*")
 
 # Main App
 def main():
@@ -54,5 +75,5 @@ def main():
         view_data_page()
 
 # Run the app
-if __name__ == "__main__":
+if __name__ == "_main_":
     main()
