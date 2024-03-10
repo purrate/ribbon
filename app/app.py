@@ -5,7 +5,25 @@ import pandas as pd
 import requests
 import numpy as np
 import matplotlib.pyplot as plt
+import requests
 # Home Page
+
+def get_deciding_factor(commenting, groping, facial_expression):
+    # Define thresholds or rules for each factor
+    commenting_threshold = 2.0  # Adjust as needed
+    groping_threshold = 1.0  # Adjust as needed
+    facial_expression_threshold = 1.0  # Adjust as needed
+
+    # Compare values with thresholds
+    if commenting >= commenting_threshold:
+        return "Section 294 IPC [vi]\nThe section penalizes certain acts of obscenity in public places i.e., whoever sings, recites, utters any obscene song, ballad, words to the annoyance of others is made punishable."
+    elif groping >= groping_threshold:
+        return "Section 354 IPC [vii]\nThis section prescribes punishment for such acts of accused which not only causes insult or outrages the modesty of a woman but also causes or threatens to cause physical harm to her."
+    elif facial_expression >= facial_expression_threshold:
+        return "Section 354A [ix]\nAny man who shows pornography to a woman against her will, Makes sexually coloured remarks"
+    else:
+        return "No specific violation"
+    
 def home():
     st.title("Streamlit Navigation Example")
     st.write("Choose an option from the sidebar.")
@@ -46,13 +64,13 @@ def predict_page():
 
                     # Display the sums
                     st.subheader("Sums:")
-                    st.write("Touching/Groping:", sums[0])
-                    st.write("Ogling/Facial Expression/Staring:", sums[1])
-                    st.write("commenting:", sums[2])
+                    st.write("Commenting:", sums[0])
+                    st.write("Ogling:", sums[1])
+                    st.write("Groping:", sums[2])
 
                     # Plotting the bar chart
                     fig, ax = plt.subplots()
-                    fields = ['Touching/Groping', 'Ogling/Facial Expression/Staring', 'Commenting']
+                    fields = ['Commenting', 'Ogling', 'Groping']
                     ax.bar(fields, sums)
                     ax.set_ylabel('Sum')
                     ax.set_xlabel('Fields')
@@ -61,6 +79,27 @@ def predict_page():
                     #
                     st.write("Prediction: ", result)
                     st.success(f"Prediction: {result}")
+                    
+                    st.write("Laws violated:", get_deciding_factor(sums[0], sums[1], sums[2]))
+                    
+                    url = "https://textanalysis-text-summarization.p.rapidapi.com/text-summarizer"
+
+                    payload = {
+                        "url": "http://en.wikipedia.org/wiki/Automatic_summarization",
+                        "text": "",
+                        "sentnum": 8
+                    }
+                    headers = {
+                        "content-type": "application/json",
+                        "X-RapidAPI-Key": "3a9d66c4a9mshfd39bb07ef66e54p18dc1fjsn96bb7aeaf350",
+                        "X-RapidAPI-Host": "textanalysis-text-summarization.p.rapidapi.com"
+                    }
+    
+                    response1 = requests.post(url, json=payload, headers=headers)
+
+                    summary = response1.json()
+                    
+                    st.write("Summary:", summary)
                 else:
                     st.error("The 'output' key is not present in the response.")
             else:
@@ -97,7 +136,7 @@ def predict_page():
 
 # View Data Page
 def view_data_page():
-    st.title("View Data Page")
+    st.title("Social Media Page")
     st.markdown("Dummy Text in Bold")
 
 # Main App

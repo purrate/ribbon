@@ -261,10 +261,6 @@ def predict():
     try:
         data = request.get_json(force=True)
         input_data = data['input_data']
-
-        # Convert input_data to a numpy array for prediction
-        input_data = [input_data] # Convert single string to a list
-
         custom_input_sequences = tokenizer.texts_to_sequences(input_data)
         custom_input_padded = pad_sequences(custom_input_sequences, maxlen=300, dtype='int32', padding='post', truncating='post')
         # Use the global loaded_model for prediction
