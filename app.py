@@ -1,7 +1,10 @@
 import streamlit as st
 import csv
+import os
 import pandas as pd
 import requests
+import numpy as np
+import matplotlib.pyplot as plt
 # Home Page
 def home():
     st.title("Streamlit Navigation Example")
@@ -13,26 +16,61 @@ def predict_page():
     text = st.text_area("Enter text:")
     if st.button("Print Text"):
         #
-        url = "http://127.0.0.1:5001/predict"  # Use the correct port number
+                            # Your input array
+        #
+        url = "http://127.0.0.1:5000/predict"  # Use the correct port number
         data = {'input_data': text}
-        
+        st.write(data)
+        print(url,data)
         try:
+            
             response = requests.post(url, json=data)
+            st.write(response)
 
+            print(response)
             if response.status_code == 200:
-                result = response.json()['output']
-                print(result)
-                st.write("fuck: ", result)
+                result = response.json().get('output')
+                if result is not None:
+                    print(result)
+                    data = np.array(result)
 
-                st.success(f"Prediction: {result}")
+                    # Sum along each axis (0-indexed)
+                    sums = np.sum(data, axis=0)
+
+                    # Streamlit App
+                    st.title("Bar Chart from Numpy Array")
+
+                    # Display the original array
+                    st.subheader("Original Numpy Array:")
+                    st.write(data)
+
+                    # Display the sums
+                    st.subheader("Sums:")
+                    st.write("Touching/Groping:", sums[0])
+                    st.write("Ogling/Facial Expression/Staring:", sums[1])
+                    st.write("commenting:", sums[2])
+
+                    # Plotting the bar chart
+                    fig, ax = plt.subplots()
+                    fields = ['Touching/Groping', 'Ogling/Facial Expression/Staring', 'Commenting']
+                    ax.bar(fields, sums)
+                    ax.set_ylabel('Sum')
+                    ax.set_xlabel('Fields')
+                    st.subheader("Bar Chart:")
+                    st.pyplot(fig)
+                    #
+                    st.write("Prediction: ", result)
+                    st.success(f"Prediction: {result}")
+                else:
+                    st.error("The 'output' key is not present in the response.")
             else:
                 st.error("Error in prediction.")
-                st.write("kjcnkjenck:" )
         except requests.exceptions.RequestException as e:
             st.error(f"Request failed: {e}")
 
 
         #
+        st.write(data)
         st.write("Entered Text: ", text)
         cleaned_text = ",".join(text.split())  # Convert to comma-separated format
         st.text_area("Cleaned Text:", cleaned_text)
@@ -60,7 +98,7 @@ def predict_page():
 # View Data Page
 def view_data_page():
     st.title("View Data Page")
-    st.markdown("*Dummy Text in Bold*")
+    st.markdown("Dummy Text in Bold")
 
 # Main App
 def main():
@@ -75,5 +113,5 @@ def main():
         view_data_page()
 
 # Run the app
-if __name__ == "_main_":
+if __name__ == "__main__":
     main()

@@ -23,7 +23,17 @@ from sklearn.metrics import recall_score
 from sklearn.metrics import precision_score
 from sklearn.metrics import f1_score 
 
-
+def prob_to_class(arr):   # converts probailities to class labes based on 0.5 threshold
+        global r,c 
+        r,c = arr.shape
+        global predict
+        predict =np.zeros((r, c))
+        for i in range(r):
+            for j in range(c):
+                if arr[i,j]>0.5:
+                    predict[i,j] = 1
+        return predict
+  
 app = Flask(__name__)
 loaded_model = None
 def load_model():
@@ -95,18 +105,7 @@ def load_model():
         return MR
 
     #---
-    # conver probabilities to labels
-
-    def prob_to_class(arr):   # converts probailities to class labes based on 0.5 threshold
-        global r,c 
-        r,c = arr.shape
-        global predict
-        predict =np.zeros((r, c))
-        for i in range(r):
-            for j in range(c):
-                if arr[i,j]>0.5:
-                    predict[i,j] = 1
-        return predict
+    # conver probabilities to label
 
     #---
     from gensim.models.fasttext import FastText
@@ -144,7 +143,7 @@ def load_model():
            embedding_matrix_fast_text[i] = embedding_vector
 
     #---
-        max_input=300
+    max_input=300
     inputs = Input(shape=(max_input,))  # input 
     embedding = Embedding(vocab_size, embedding_size, trainable=False) 
 
@@ -250,6 +249,8 @@ def load_model():
     print(custom_predictions)
     print("Predicted class labels for custom input:")
     print(custom_class_labels)
+    
+    loaded_model=model_4_fast_text
 
     #---
 load_model()
@@ -262,14 +263,18 @@ def predict():
         input_data = data['input_data']
 
         # Convert input_data to a numpy array for prediction
+        input_data = [input_data] # Convert single string to a list
 
         custom_input_sequences = tokenizer.texts_to_sequences(input_data)
         custom_input_padded = pad_sequences(custom_input_sequences, maxlen=300, dtype='int32', padding='post', truncating='post')
         # Use the global loaded_model for prediction
-        prediction = loaded_model.predict(custom_input_padded)
-
+        predictions = loaded_model.predict(custom_input_padded)
+        prediction = prob_to_class(predictions)
+        print(prediction)
         # Return the prediction as JSON
-        return jsonify({'output': prediction})
+        prediction_list = prediction.tolist()
+        print(prediction_list)
+        return jsonify({'output': prediction_list})
 
     except Exception as e:
         return jsonify({'error': str(e)})
@@ -278,5 +283,5 @@ def predict():
 
 
 #---
-if __name__ == 'main':
-    app.run(port=5001)
+if __name__ == '__main__':
+    app.run(port=5000)
